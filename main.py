@@ -172,15 +172,20 @@ class DBOperations:
   def select_all(self):
     try:
       self.get_connection()
-      self.cur.execute(self.sql_select_all)
+
+      self.cur.execute("SELECT * FROM Flight")
       result = self.cur.fetchall()
 
-      # think how you could develop this method to show the records
+      for row in result:
+        print(row)
 
     except Exception as e:
       print(e)
+
     finally:
       self.conn.close()
+
+      # think how you could develop this method to show the records
 
   def search_data(self):
     try:
@@ -288,7 +293,7 @@ while True:
   print("**********")
   print(" 1. Create table FlightInfo")
   print(" 2. Insert data into FlightInfo")
-  print(" 3. Select all data from FlightInfo")
+  print(" 3. View all flights")
   print(" 4. Search a flight")
   print(" 5. Update data some records")
   print(" 6. Delete data some records")
