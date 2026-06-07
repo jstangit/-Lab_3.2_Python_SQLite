@@ -19,7 +19,7 @@ class DBOperations:
 
   def __init__(self):
     try:
-      self.conn = sqlite3.connect("DBName.db")
+      self.conn = sqlite3.connect("FlightMan.db")
       self.cur = self.conn.cursor()
       self.cur.execute(self.sql_create_table_firsttime)
       self.conn.commit()
@@ -29,15 +29,58 @@ class DBOperations:
       self.conn.close()
 
   def get_connection(self):
-    self.conn = sqlite3.connect("DBName.db")
+    self.conn = sqlite3.connect("FlightMan.db")
     self.cur = self.conn.cursor()
 
   def create_table(self):
     try:
       self.get_connection()
-      self.cur.execute(self.sql_create_table)
+      self.cur.execute("""
+      CREATE TABLE IF NOT EXISTS Destination (
+        DestinationID INTEGER PRIMARY KEY AUTOINCREMENT,
+        AirportCode TEXT NOT NULL UNIQUE,
+        City TEXT NOT NULL,
+        Country TEXT NOT NULL,
+        TerminalInfo TEXT
+      )
+      """)
+
+      self.cur.execute("""
+      CREATE TABLE IF NOT EXISTS Pilot (
+        PilotID INTEGER PRIMARY KEY AUTOINCREMENT,
+        FirstName TEXT NOT NULL,
+        LastName TEXT NOT NULL,
+        LicenceNumber TEXT NOT NULL UNIQUE,
+        Phone TEXT,
+        Rank TEXT
+      )
+    """)
+
+      self.cur.execute("""
+      CREATE TABLE IF NOT EXISTS Flight (
+        FlightID INTEGER PRIMARY KEY AUTOINCREMENT,
+        FlightNumber TEXT NOT NULL UNIQUE,
+        DestinationID INTEGER NOT NULL,
+        DepartureDate TEXT NOT NULL,
+        DepartureTime TEXT NOT NULL,
+        ArrivalTime TEXT,
+        Status TEXT NOT NULL,
+        FOREIGN KEY (DestinationID) REFERENCES Destination(DestinationID)
+      )
+      """)
+
+      self.cur.execute("""
+      CREATE TABLE IF NOT EXISTS PilotAssignment (
+        FlightID INTEGER NOT NULL,
+        PilotID INTEGER NOT NULL,
+        Role TEXT NOT NULL,
+        PRIMARY KEY (FlightID, PilotID),
+        FOREIGN KEY (FlightID) REFERENCES Flight(FlightID),
+        FOREIGN KEY (PilotID) REFERENCES Pilot(PilotID)
+      )
+      """)
       self.conn.commit()
-      print("Table created successfully")
+      print("Tables created successfully")
     except Exception as e:
       print(e)
     finally:
