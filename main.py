@@ -86,19 +86,86 @@ class DBOperations:
     finally:
       self.conn.close()
 
-  def insert_data(self):
+  def insert_sample_data(self):
     try:
       self.get_connection()
 
-      flight = FlightInfo()
-      flight.set_flight_id(int(input("Enter FlightID: ")))
+      self.cur.executemany("""
+      INSERT OR IGNORE INTO Destination
+      (DestinationID, AirportCode, City, Country, TerminalInfo)
+      VALUES (?, ?, ?, ?, ?)
+      """, [
+        (1, "LHR", "London", "United Kingdom", "Terminal 5"),
+        (2, "CDG", "Paris", "France", "Terminal 2"),
+        (3, "AMS", "Amsterdam", "Netherlands", "Main Terminal"),
+        (4, "FCO", "Rome", "Italy", "Terminal 1"),
+        (5, "MAD", "Madrid", "Spain", "Terminal 4"),
+        (6, "JFK", "New York", "United States", "Terminal 8"),
+        (7, "DXB", "Dubai", "United Arab Emirates", "Terminal 3"),
+        (8, "SIN", "Singapore", "Singapore", "Terminal 1"),
+        (9, "DUB", "Dublin", "Ireland", "Terminal 2"),
+        (10, "BER", "Berlin", "Germany", "Terminal 1")
+      ])
 
-      self.cur.execute(self.sql_insert, tuple(str(flight).split("\n")))
+      self.cur.executemany("""
+      INSERT OR IGNORE INTO Pilot
+      (PilotID, FirstName, LastName, LicenceNumber, Phone, Rank)
+      VALUES (?, ?, ?, ?, ?, ?)
+      """, [
+        (1, "John", "Smith", "LIC1001", "07111111111", "Captain"),
+        (2, "Sarah", "Jones", "LIC1002", "07222222222", "First Officer"),
+        (3, "Michael", "Brown", "LIC1003", "07333333333", "Captain"),
+        (4, "Emma", "Wilson", "LIC1004", "07444444444", "First Officer"),
+        (5, "David", "Taylor", "LIC1005", "07555555555", "Captain"),
+        (6, "Laura", "Evans", "LIC1006", "07666666666", "First Officer"),
+        (7, "James", "Thomas", "LIC1007", "07777777777", "Captain"),
+        (8, "Olivia", "Walker", "LIC1008", "07888888888", "First Officer"),
+        (9, "Daniel", "White", "LIC1009", "07999999999", "Captain"),
+        (10, "Sophie", "Harris", "LIC1010", "07000000000", "First Officer")
+      ])
+
+      self.cur.executemany("""
+      INSERT OR IGNORE INTO Flight
+      (FlightID, FlightNumber, DestinationID, DepartureDate, DepartureTime, ArrivalTime, Status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      """, [
+        (1, "FM101", 1, "2026-07-01", "08:00", "09:00", "Scheduled"),
+        (2, "FM102", 2, "2026-07-01", "09:30", "11:45", "Scheduled"),
+        (3, "FM103", 3, "2026-07-02", "10:00", "11:20", "Delayed"),
+        (4, "FM104", 4, "2026-07-02", "12:00", "14:30", "Scheduled"),
+        (5, "FM105", 5, "2026-07-03", "13:15", "15:50", "Cancelled"),
+        (6, "FM106", 6, "2026-07-03", "14:00", "21:00", "Scheduled"),
+        (7, "FM107", 7, "2026-07-04", "16:20", "23:40", "Scheduled"),
+        (8, "FM108", 8, "2026-07-04", "18:00", "06:30", "Scheduled"),
+        (9, "FM109", 9, "2026-07-05", "07:45", "09:05", "Delayed"),
+        (10, "FM110", 10, "2026-07-05", "11:10", "13:40", "Scheduled")
+      ])
+
+      self.cur.executemany("""
+      INSERT OR IGNORE INTO PilotAssignment
+      (FlightID, PilotID, Role)
+      VALUES (?, ?, ?)
+      """, [
+        (1, 1, "Captain"),
+        (1, 2, "First Officer"),
+        (2, 3, "Captain"),
+        (2, 4, "First Officer"),
+        (3, 5, "Captain"),
+        (3, 6, "First Officer"),
+        (4, 7, "Captain"),
+        (4, 8, "First Officer"),
+        (5, 9, "Captain"),
+        (5, 10, "First Officer"),
+        (6, 1, "Captain"),
+        (6, 4, "First Officer")
+      ])
 
       self.conn.commit()
-      print("Inserted data successfully")
+      print("Sample data inserted successfully")
+
     except Exception as e:
       print(e)
+
     finally:
       self.conn.close()
 
