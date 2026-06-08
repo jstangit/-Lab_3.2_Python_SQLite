@@ -190,17 +190,25 @@ class DBOperations:
   def search_data(self):
     try:
       self.get_connection()
-      flightID = int(input("Enter FlightNo: "))
-      self.cur.execute(self.sql_search, tuple(str(flightID)))
+      status = input("Enter Flight Status: ")
+
+      self.cur.execute("SELECT * FROM Flight WHERE Status = ?", (status,))
       result = self.cur.fetchone()
+
       if type(result) == type(tuple()):
         for index, detail in enumerate(result):
           if index == 0:
             print("Flight ID: " + str(detail))
           elif index == 1:
-            print("Flight Origin: " + detail)
+            print("Flight Number: " + detail)
           elif index == 2:
-            print("Flight Destination: " + detail)
+            print("Destination ID: " + str(detail))
+          elif index == 3:
+            print("Departure Date: " + detail)
+          elif index == 4:
+            print("Departure Time: " + detail)
+          elif index == 5:
+            print("Arrival Time: " + detail)
           else:
             print("Status: " + str(detail))
       else:
