@@ -5,28 +5,10 @@ import sqlite3
 
 
 class DBOperations:
-  sql_create_table_firsttime = "create table if not exists "
-
-  sql_create_table = "create table TableName"
-
-  sql_insert = ""
-  sql_select_all = "select * from TableName"
-  sql_search = "select * from TableName where FlightID = ?"
-  sql_alter_data = ""
-  sql_update_data = ""
-  sql_delete_data = ""
-  sql_drop_table = ""
 
   def __init__(self):
-    try:
-      self.conn = sqlite3.connect("FlightMan.db")
-      self.cur = self.conn.cursor()
-      self.cur.execute(self.sql_create_table_firsttime)
-      self.conn.commit()
-    except Exception as e:
-      print(e)
-    finally:
-      self.conn.close()
+    pass
+  
 
   def get_connection(self):
     self.conn = sqlite3.connect("FlightMan.db")
@@ -169,15 +151,54 @@ class DBOperations:
     finally:
       self.conn.close()
 
-  def select_all(self):
+  def add_new_flight(self):
     try:
       self.get_connection()
 
-      self.cur.execute("SELECT * FROM Flight")
-      result = self.cur.fetchall()
+      flightNumber = input("Enter Flight Number: ")
+      destinationID = int(input("Enter Destination ID: "))
+      departureDate = input("Enter Departure Date (YYYY-MM-DD): ")
+      departureTime = input("Enter Departure Time (HH:MM): ")
+      arrivalTime = input("Enter Arrival Time (HH:MM): ")
+      status = input("Enter Status: ")
 
-      for row in result:
-        print(row)
+      result = self.cur.execute(
+        """
+        INSERT INTO Flight
+        (FlightNumber, DestinationID, DepartureDate, DepartureTime, ArrivalTime, Status)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (flightNumber, destinationID, departureDate, departureTime, arrivalTime, status)
+      )
+
+      self.conn.commit()
+      print("New flight added successfully")
+
+    except Exception as e:
+      print(e)
+
+    finally:
+      self.conn.close()
+
+  def assign_pilot(self):
+    try:
+      self.get_connection()
+
+      flightID = int(input("Enter Flight ID: "))
+      pilotID = int(input("Enter Pilot ID: "))
+      role = input("Enter Role: ")
+
+      result = self.cur.execute(
+        """
+        INSERT INTO PilotAssignment
+        (FlightID, PilotID, Role)
+        VALUES (?, ?, ?)
+        """,
+        (flightID, pilotID, role)
+      )
+
+      self.conn.commit()
+      print("Pilot assigned to flight successfully")
 
     except Exception as e:
       print(e)
@@ -193,10 +214,11 @@ class DBOperations:
       status = input("Enter Flight Status: ")
 
       self.cur.execute("SELECT * FROM Flight WHERE Status = ?", (status,))
-      result = self.cur.fetchone()
+      result = self.cur.fetchall()
 
-      if type(result) == type(tuple()):
-        for index, detail in enumerate(result):
+      if len(result) > 0:
+       for row in result:
+        for index, detail in enumerate(row):
           if index == 0:
             print("Flight ID: " + str(detail))
           elif index == 1:
@@ -247,12 +269,57 @@ class DBOperations:
     finally:
       self.conn.close()
 
+  def view_pilot_schedule(self):
+    try:
+      self.get_connection()
+
+      pilotID = int(input("Enter Pilot ID: "))
+
+      self.cur.execute(
+        """
+        SELECT Pilot.FirstName, Pilot.LastName, Flight.FlightNumber,
+               Flight.DepartureDate, Flight.DepartureTime, Flight.ArrivalTime,
+               Flight.Status, PilotAssignment.Role
+        FROM PilotAssignment
+        JOIN Pilot ON PilotAssignment.PilotID = Pilot.PilotID
+        JOIN Flight ON PilotAssignment.FlightID = Flight.FlightID
+        WHERE Pilot.PilotID = ?
+        """,
+        (pilotID,)
+      )
+
+      result = self.cur.fetchall()
+
+      for row in result:
+        print("Pilot: " + row[0] + " " + row[1])
+        print("Flight Number: " + row[2])
+        print("Departure Date: " + row[3])
+        print("Departure Time: " + row[4])
+        print("Arrival Time: " + row[5])
+        print("Status: " + row[6])
+        print("Role: " + row[7] + "\n")
+
+    except Exception as e:
+      print(e)
+
+    finally:
+      self.conn.close()
+
 
 # Define Delete_data method to delete data from the table. The user will need to input the flight id to delete the corrosponding record.
 
   def delete_data(self):
     try:
       self.get_connection()
+
+      flightID = int(input("Enter Flight ID: "))
+
+      result = self.cur.execute(
+        "DELETE FROM Flight WHERE FlightID = ?",
+        (flightID,)
+      )
+
+      self.conn.commit()
 
       if result.rowcount != 0:
         print(str(result.rowcount) + "Row(s) affected.")
@@ -264,49 +331,81 @@ class DBOperations:
     finally:
       self.conn.close()
 
+  def view_destinations(self):
+    try:
+      self.get_connection()
 
-class FlightInfo:
+      self.cur.execute("SELECT * FROM Destination")
+      result = self.cur.fetchall()
 
-  def __init__(self):
-    self.flightID = 0
-    self.flightOrigin = ''
-    self.flightDestination = ''
-    self.status = ''
+      for row in result:
+        print(row)
 
-  def set_flight_id(self, flightID):
-    self.flightID = flightID
+    except Exception as e:
+      print(e)
 
-  def set_flight_origin(self, flightOrigin):
-    self.flight_origin = flightOrigin
+    finally:
+      self.conn.close()
 
-  def set_flight_destination(self, flightDestination):
-    self.flight_destination = flightDestination
+  def update_destination(self):
+    try:
+      self.get_connection()
 
-  def set_status(self, status):
-    self.status = status
+      destinationID = int(input("Enter Destination ID: "))
+      terminalInfo = input("Enter New Terminal Information: ")
 
-  def get_flight_id(self):
-    return self.flightID
+      result = self.cur.execute(
+        """
+        UPDATE Destination
+        SET TerminalInfo = ?
+        WHERE DestinationID = ?
+        """,
+        (terminalInfo, destinationID)
+      )
 
-  def get_flight_origin(self):
-    return self.flightOrigin
+      self.conn.commit()
 
-  def get_flight_destination(self):
-    return self.flightDestination
+      if result.rowcount != 0:
+        print(str(result.rowcount) + " Row(s) affected.")
+      else:
+        print("Cannot find this record in the database")
 
-  def get_status(self):
-    return self.status
+    except Exception as e:
+      print(e)
 
-  def __str__(self):
-    return str(
-      self.flightID
-    ) + "\n" + self.flightOrigin + "\n" + self.flightDestination + "\n" + str(
-      self.status)
+    finally:
+      self.conn.close()
 
+  def summary_reports(self):
+    try:
+      self.get_connection()
+
+      self.cur.execute("""
+      SELECT DestinationID, COUNT(*)
+      FROM Flight
+      GROUP BY DestinationID
+      """)
+
+      result = self.cur.fetchall()
+
+      for row in result:
+        print("Destination ID: " + str(row[0]))
+        print("Number of Flights: " + str(row[1]) + "\n")
+
+    except Exception as e:
+      print(e)
+
+    finally:
+      self.conn.close()
 
 # The main function will parse arguments.
 # These argument will be definded by the users on the console.
 # The user will select a choice from the menu to interact with the database.
+
+# Create and populate the database before the staff menu opens.
+db_setup = DBOperations()
+db_setup.create_table()
+db_setup.insert_sample_data()
 
 while True:
   print("\n Menu:")
