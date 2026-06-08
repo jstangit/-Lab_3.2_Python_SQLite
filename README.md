@@ -25,4 +25,4 @@ Changes:
 - Created Flight table with flight schedule information and destination foreign key.
 - Created PilotAssignment table to support pilot-to-flight assignments using a composite primary key.
 
-- Added sample data insertion for the Flight Management Database. The insert_sample_data method now populates the Destination, Pilot, Flight and PilotAssignment tables.
+- Added sample data insertion for the Flight Management Database before the menu opens.
