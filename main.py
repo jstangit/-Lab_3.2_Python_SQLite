@@ -223,7 +223,19 @@ class DBOperations:
     try:
       self.get_connection()
 
-      # Update statement
+      flightID = int(input("Enter Flight ID: "))
+      status = input("Enter New Status: ")
+
+      result = self.cur.execute(
+        """
+        UPDATE Flight
+        SET Status = ?
+        WHERE FlightID = ?
+        """,
+        (status, flightID)
+      )
+
+      self.conn.commit()
 
       if result.rowcount != 0:
         print(str(result.rowcount) + "Row(s) affected.")
@@ -299,29 +311,38 @@ class FlightInfo:
 while True:
   print("\n Menu:")
   print("**********")
-  print(" 1. Create table FlightInfo")
-  print(" 2. Insert data into FlightInfo")
-  print(" 3. View all flights")
-  print(" 4. Search a flight")
-  print(" 5. Update data some records")
-  print(" 6. Delete data some records")
-  print(" 7. Exit\n")
+  print(" 1. Add a new flight")
+  print(" 2. View flights by status")
+  print(" 3. Update flight information")
+  print(" 4. Delete flight")
+  print(" 5. Assign pilot to flight")
+  print(" 6. View pilot schedule")
+  print(" 7. View destination information")
+  print(" 8. Update destination information")
+  print(" 9. View summary reports")
+  print(" 10. Exit\n")
 
   __choose_menu = int(input("Enter your choice: "))
   db_ops = DBOperations()
   if __choose_menu == 1:
-    db_ops.create_table()
+    db_ops.add_new_flight()
   elif __choose_menu == 2:
-    db_ops.insert_data()
-  elif __choose_menu == 3:
-    db_ops.select_all()
-  elif __choose_menu == 4:
     db_ops.search_data()
-  elif __choose_menu == 5:
+  elif __choose_menu == 3:
     db_ops.update_data()
-  elif __choose_menu == 6:
+  elif __choose_menu == 4:
     db_ops.delete_data()
+  elif __choose_menu == 5:
+    db_ops.assign_pilot()
+  elif __choose_menu == 6:
+    db_ops.view_pilot_schedule()
   elif __choose_menu == 7:
+    db_ops.view_destinations()
+  elif __choose_menu == 8:
+    db_ops.update_destination()
+  elif __choose_menu == 9:
+    db_ops.summary_reports()
+  elif __choose_menu == 10:
     exit(0)
   else:
     print("Invalid Choice")
